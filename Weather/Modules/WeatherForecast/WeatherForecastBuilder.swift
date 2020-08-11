@@ -9,17 +9,21 @@
 import SwiftUI
 
 final class WeatherForecastBuilder: WeatherForecastBuiling {
-    func buildCurrentWeatherForecastView(networkClient: NetworkClientType, storage: CityPersistanceStoreContract) -> AnyView {
+    func buildCurrentWeatherForecastView(networkClient: NetworkClientType,
+                                         storage: CityPersistanceStoreProtocol,
+                                         cityListBuilder: CityListViewBuilding) -> AnyView {
         let currentWeatherViewModel = CurrentWeatherViewModel(networkClient: networkClient,
-                                                              storage: storage)
+                                                              storage: storage,
+                                                              builder: cityListBuilder)
         return AnyView(CurrentWeatherForecast(viewModel: currentWeatherViewModel))
     }
 
-    func buildHourlyWeatherForecastView(networkClient: NetworkClientType, storage: CityPersistanceStoreContract) -> AnyView {
-        AnyView(HourlyWeatherForecast())
-    }
-
-    func buildCityListView(storage: CityPersistanceStoreContract) -> AnyView {
-        AnyView(Text("City List View"))
+    func buildHourlyWeatherForecastView(networkClient: NetworkClientType,
+                                        storage: CityPersistanceStoreProtocol,
+                                        cityListBuilder: CityListViewBuilding) -> AnyView {
+        let hourlyWeatherViewModel = HourlyWeatherViewModel(networkClient: networkClient,
+                                                            storage: storage,
+                                                            builder: cityListBuilder)
+        return AnyView(HourlyWeatherForecast(viewModel: hourlyWeatherViewModel))
     }
 }

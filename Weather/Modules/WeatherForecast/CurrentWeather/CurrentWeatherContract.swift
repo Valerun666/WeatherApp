@@ -6,8 +6,8 @@
 //  Copyright © 2020 Valerii Teptiuk. All rights reserved.
 //
 
-import Foundation
+import SwiftUI
 
-protocol CurrentWeatherViewModelProtocol: ViewModel {
+protocol CurrentWeatherViewModelProtocol: ViewModel, CityListPresentable {
     var state: ViewState<[CurrentWeatherRowViewModel]> { get }
 }

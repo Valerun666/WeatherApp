@@ -1,52 +1,59 @@
 //
-//  CurrentWeatherViewModel.swift
+//  HourlyWeatherViewModel.swift
 //  WeatherApp
 //
-//  Created by Valerii Teptiuk on 09.08.2020.
+//  Created by Valerii Teptiuk on 11.08.2020.
 //  Copyright © 2020 Valerii Teptiuk. All rights reserved.
 //
 
 import SwiftUI
 import Combine
 
-final class CurrentWeatherViewModel: CurrentWeatherViewModelProtocol {
-    @Published private(set) var state: ViewState<[CurrentWeatherRowViewModel]> = .loading
+final class HourlyWeatherViewModel {
+    @Published private(set) var state: ViewState<[HourlyWeatherSectionViewModel]> = .loading
 
-    private var weatherForecasts = [CurrentWeatherRowViewModel]() {
+    private var weatherForecasts = [HourlyWeatherSectionViewModel]() {
         didSet {
             if !weatherForecasts.isEmpty {
                 state = .data(weatherForecasts)
             }
         }
     }
+    private var response = [HourlyWeatherForecastResponse]()
 
     private let networkClient: NetworkClientType
-    private let storage: CityPersistanceStoreContract
+    private let storage: CityPersistanceStoreProtocol
+    private let builder: CityListViewBuilding
 
     private var disposables = Set<AnyCancellable>()
-
+    
     init(networkClient: NetworkClientType,
-         storage: CityPersistanceStoreContract) {
+         storage: CityPersistanceStoreProtocol,
+         builder: CityListViewBuilding) {
         self.networkClient = networkClient
         self.storage = storage
-        storage.add("Kiev")
-        storage.add("Rome")
+        self.builder = builder
         refreshData()
     }
 }
 
-private extension CurrentWeatherViewModel {
+extension HourlyWeatherViewModel: HourlyWeatherViewModelProtocol {
+    var cityList: AnyView {
+        builder.buildCityListView(storage: storage, builder: CityListBuilder())
+    }
+}
+
+private extension HourlyWeatherViewModel {
     func refreshData() {
         state = .loading
         weatherForecasts = []
         let cities = storage.fetch()
         let publishers = cities.compactMap({ [weak self] city in
-            self?.networkClient.execute(request: WeatherServiceProvider.currentWeather(cityId: city),
-                                        with: CurrentWeatherForecastResponse.self)
+            self?.networkClient.execute(request: WeatherServiceProvider.hourlyForecast(lat: "\(city.lat)",
+                lon: "\(city.lon)"), with: HourlyWeatherForecastResponse.self)
         })
 
         Publishers.MergeMany(publishers)
-            .compactMap(CurrentWeatherRowViewModel.init)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] value in
                 guard let self = self else { return }
@@ -55,9 +62,10 @@ private extension CurrentWeatherViewModel {
                 case .failure: self.state = .error
                 case .finished: break
                 }
-            }, receiveValue: { [weak self] weather in
+            }, receiveValue: { [weak self] response in
                 guard let self = self else { return }
-                self.weatherForecasts.append(weather)
+                self.response.append(response)
+                self.weatherForecasts.append(HourlyWeatherSectionViewModel(item: response))
             })
             .store(in: &disposables)
     }

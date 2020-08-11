@@ -10,10 +10,11 @@ import SwiftUI
 
 protocol WeatherForecastBuiling {
     func buildCurrentWeatherForecastView(networkClient: NetworkClientType,
-                                         storage: CityPersistanceStoreContract) -> AnyView
+                                         storage: CityPersistanceStoreProtocol,
+                                         cityListBuilder: CityListViewBuilding) -> AnyView
     func buildHourlyWeatherForecastView(networkClient: NetworkClientType,
-                                        storage: CityPersistanceStoreContract) -> AnyView
-    func buildCityListView(storage: CityPersistanceStoreContract) -> AnyView
+                                        storage: CityPersistanceStoreProtocol,
+                                        cityListBuilder: CityListViewBuilding) -> AnyView
 }
 
 protocol WeatherForecastViewModelProtocol: ViewModel {

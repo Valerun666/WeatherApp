@@ -8,10 +8,10 @@
 
 import SwiftUI
 
-struct CurrentWeatherForecast: View {
-    @ObservedObject var viewModel: CurrentWeatherViewModel
+struct CurrentWeatherForecast<ViewModel: CurrentWeatherViewModelProtocol>: View {
+    @ObservedObject var viewModel: ViewModel
 
-    init(viewModel: CurrentWeatherViewModel) {
+    init(viewModel: ViewModel) {
       self.viewModel = viewModel
     }
     
@@ -19,6 +19,11 @@ struct CurrentWeatherForecast: View {
         NavigationView {
             contentView
                 .navigationBarTitle("Weather ⛅️", displayMode: .inline)
+                .navigationBarItems(trailing:
+                    NavigationLink(destination: viewModel.cityList) {
+                        Text("Cities")
+                    }
+                )
         }
     }
 }
@@ -52,6 +57,6 @@ private extension CurrentWeatherForecast {
 struct CurrentWeatherForecast_Previews: PreviewProvider {
     static var previews: some View {
         CurrentWeatherForecast(viewModel: CurrentWeatherViewModel(networkClient: NetworkClient(urlBuilder: URLBuilder()),
-                                                                  storage: CityPersistanceCoordinator()))
+                                                                  storage: CityPersistanceCoordinator(), builder: CityListViewBuilder()))
     }
 }

@@ -20,12 +20,14 @@ extension WeatherForecastViewModel: WeatherForecastViewModelProtocol {
     var currentWeatherView: AnyView {
         let networkClient = NetworkClient(urlBuilder: URLBuilder())
         return builder.buildCurrentWeatherForecastView(networkClient: networkClient,
-                                                       storage: CityPersistanceCoordinator())
+                                                       storage: CityPersistanceCoordinator(),
+                                                       cityListBuilder: CityListViewBuilder())
     }
 
     var hourlyWeatherView: AnyView {
         let networkClient = NetworkClient(urlBuilder: URLBuilder())
         return builder.buildHourlyWeatherForecastView(networkClient: networkClient,
-                                                      storage: CityPersistanceCoordinator())
+                                                      storage: CityPersistanceCoordinator(),
+                                                      cityListBuilder: CityListViewBuilder())
     }
 }

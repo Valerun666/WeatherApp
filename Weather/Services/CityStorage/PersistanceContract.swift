@@ -8,9 +8,11 @@
 
 import Foundation
 
-protocol CityPersistanceStoreContract {
-    func add(_ city: String)
-    func delete(_ city: String) -> String?
-    func fetch() -> [String]
+protocol CityPersistanceStoreProtocol {
+    func add(_ city: City)
+    func remove(_ city: City) -> City?
+    func remove(at offsets: IndexSet)
+    func fetch() -> [City]
+
 }
 

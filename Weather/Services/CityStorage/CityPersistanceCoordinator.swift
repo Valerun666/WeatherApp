@@ -8,25 +8,27 @@
 
 import Foundation
 
-final class CityPersistanceCoordinator: CityPersistanceStoreContract {
+final class CityPersistanceCoordinator: CityPersistanceStoreProtocol {
     private enum CityPersistanceKey: String {
         case cityList
     }
 
-    private var storage: [String] {
+    private var storage: [City] {
         get {
-            guard let cityList = UserDefaults.standard.stringArray(forKey: CityPersistanceKey.cityList.rawValue) else {
+            guard let data = UserDefaults.standard.data(forKey: CityPersistanceKey.cityList.rawValue) else {
                 return []
             }
 
-            return cityList
+            return try! PropertyListDecoder().decode([City].self, from: data)
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: CityPersistanceKey.cityList.rawValue)
+            if let data = try? PropertyListEncoder().encode(newValue) {
+                UserDefaults.standard.set(data, forKey: CityPersistanceKey.cityList.rawValue)
+            }
         }
     }
 
-    func add(_ value: String) {
+    func add(_ value: City) {
         guard !storage.contains(value) else {
             return
         }
@@ -36,7 +38,7 @@ final class CityPersistanceCoordinator: CityPersistanceStoreContract {
         storage = newStorage
     }
 
-    func delete(_ value: String) -> String? {
+    func remove(_ value: City) -> City? {
         guard storage.contains(value) else {
             return nil
         }
@@ -45,7 +47,13 @@ final class CityPersistanceCoordinator: CityPersistanceStoreContract {
         return value
     }
 
-    func fetch() -> [String] {
+    func remove(at offsets: IndexSet) {
+        var newStorage = storage
+        newStorage.remove(atOffsets: offsets)
+        storage = newStorage
+    }
+
+    func fetch() -> [City] {
         storage
     }
     
