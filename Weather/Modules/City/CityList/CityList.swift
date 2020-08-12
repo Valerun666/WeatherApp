@@ -7,22 +7,26 @@
 //
 
 import SwiftUI
+import Combine
 
-struct CityList<ViewModel: CityListViewModelProtocol>: View {
+struct CityList<ViewModel: CityListViewModelProtocol, Router: CityListRouterOutput>: View {
     @State private var isPresented = false
     @ObservedObject var viewModel: ViewModel
+    @ObservedObject var router: Router
 
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, router: Router) {
         self.viewModel = viewModel
+        self.router = router
     }
 
     var body: some View {
         contentView
         .navigationBarItems(trailing:
             Button("Add City") {
+                self.viewModel.didTapAddCity()
                 self.isPresented = true
             }.sheet(isPresented: $isPresented) {
-                self.viewModel.addCity
+                self.router.addCity
             }
         ).onAppear(perform: viewModel.didLoad)
     }

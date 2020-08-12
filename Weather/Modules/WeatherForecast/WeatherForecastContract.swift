@@ -8,16 +8,20 @@
 
 import SwiftUI
 
-protocol WeatherForecastBuiling {
-    func buildCurrentWeatherForecastView(networkClient: NetworkClientType,
-                                         storage: CityPersistanceStoreProtocol,
-                                         cityListBuilder: CityListViewBuilding) -> AnyView
-    func buildHourlyWeatherForecastView(networkClient: NetworkClientType,
-                                        storage: CityPersistanceStoreProtocol,
-                                        cityListBuilder: CityListViewBuilding) -> AnyView
+enum WeatherNavigationTag: String {
+    case showCityList
+}
+
+protocol WeatherForecastRouterOutput: Router {
+    var cityList: AnyView { get set }
+}
+
+protocol WeatherForecastRouterInput {
+    func showCityList()
 }
 
 protocol WeatherForecastViewModelProtocol: ViewModel {
-    var currentWeatherView: AnyView { get }
-    var hourlyWeatherView: AnyView { get }
+    var navigationTag: WeatherNavigationTag? { get set }
+
+    func didTapCitiesButton()
 }

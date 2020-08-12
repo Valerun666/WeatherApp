@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct HourlyWeatherRow: View {
-    private let viewModel: HourlyWeatherRowViewModel
+    private var viewModel: HourlyWeatherRowViewModel
 
     init(viewModel: HourlyWeatherRowViewModel) {
         self.viewModel = viewModel
@@ -17,8 +17,9 @@ struct HourlyWeatherRow: View {
 
     var body: some View {
         HStack {
-            Text(viewModel.time)
-            Text(viewModel.temperature)
+            Text("Date: \(viewModel.time)")
+            Spacer()
+            Text("🌤 \(viewModel.temperature)°")
         }
     }
 }

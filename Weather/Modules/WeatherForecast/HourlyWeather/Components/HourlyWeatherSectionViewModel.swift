@@ -8,22 +8,13 @@
 
 import Foundation
 
-struct HourlyWeatherSectionViewModel: Identifiable {
-    private let item: HourlyWeatherForecastResponse
+struct HourlyWeatherSectionViewModel {
+    let city: String
+    let hourlyForecast: [HourlyWeatherRowViewModel]
 
-    var id: String {
-        item.city
-    }
-
-    var name: String {
-        item.city
-    }
-
-    private(set) var hourlyForecast: [HourlyWeatherRowViewModel]
-
-    init(item: HourlyWeatherForecastResponse) {
-        self.item = item
-        self.hourlyForecast = item.forecasts.map(HourlyWeatherRowViewModel.init(item: ))
+    init(item: HourlyWeatherForecastModel) {
+        self.city = item.city.name
+        self.hourlyForecast = item.forecast.map(HourlyWeatherRowViewModel.init(item: ))
     }
 
 }

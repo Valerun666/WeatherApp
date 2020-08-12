@@ -7,16 +7,25 @@
 //
 
 import SwiftUI
+import Combine
 
 final class CityListViewModel {
     @Published private(set) var state: ViewState<[City]> = .loading
+    @Published var navigationTag: CityListNavigationTag? = nil {
+        didSet {
+            if navigationTag != nil {
+                objectWillChange.send()
+            }
+        }
+    }
+    var navigationTagDidChanged = PassthroughSubject<Void,Never>()
 
     private let storage: CityPersistanceStoreProtocol
-    private let builder: CityListBuilding
+    private let router: CityListRouterInput
 
-    init(storage: CityPersistanceStoreProtocol, builder: CityListBuilding) {
+    init(storage: CityPersistanceStoreProtocol, router: CityListRouterInput) {
         self.storage = storage
-        self.builder = builder
+        self.router = router
     }
 }
 
@@ -30,8 +39,9 @@ extension CityListViewModel: CityListViewModelProtocol {
         updateCityList()
     }
     
-    var addCity: AnyView {
-        builder.buildAddCity(storage: storage)
+    func didTapAddCity() {
+        router.showAddCity()
+        navigationTag = .showAddCity
     }
 }
 

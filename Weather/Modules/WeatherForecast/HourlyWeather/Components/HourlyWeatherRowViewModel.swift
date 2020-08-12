@@ -17,11 +17,12 @@ struct HourlyWeatherRowViewModel: Identifiable {
     }
 
     var time: String {
-        String(item.timeTxt)
+        let date = Date(timeIntervalSince1970: TimeInterval(item.time))
+        return date.stringIn(format: Date.DateFormat.hourlyDate.value)
     }
 
     var temperature: String {
-        String(item.temperature.temp)
+        String(format: "%.1f", item.temperature)
     }
 
     init(item: HourlyForecast) {

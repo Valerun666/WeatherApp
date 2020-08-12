@@ -8,31 +8,61 @@
 
 import SwiftUI
 
-struct WeatherForecast: View {
-    private var viewModel: WeatherForecastViewModel
+struct WeatherForecast<Router: WeatherForecastRouterOutput>: View {
+    @ObservedObject var viewModel: WeatherForecastViewModel
+    @ObservedObject var router: Router
+    @State private var selection = 0
 
-    init(viewModel: WeatherForecastViewModel) {
+    let currentWeatherView: AnyView
+    let hourlyWeatherView: AnyView
+
+    init(viewModel: WeatherForecastViewModel,
+         router: Router,
+         currentWeatherView: AnyView,
+         hourlyWeatherView: AnyView) {
         self.viewModel = viewModel
+        self.router = router
+        self.currentWeatherView = currentWeatherView
+        self.hourlyWeatherView = hourlyWeatherView
     }
 
     var body: some View {
-        TabView {
-            viewModel.currentWeatherView
-                .tabItem {
-                    Image(systemName: "cloud.sun.bolt.fill")
-                    Text("Current weather")
+        NavigationView {
+            TabView(selection: $selection) {
+                currentWeatherView
+                    .tabItem {
+                        Image(systemName: "cloud.sun.bolt.fill")
+                        Text("Current weather")
+                }
+                .tag(0)
+
+                hourlyWeatherView
+                    .tabItem {
+                        Image(systemName: "clock.fill")
+                        Text("Hourly weather")
+                }
+                .tag(1)
             }
-            viewModel.hourlyWeatherView
-                .tabItem {
-                    Image(systemName: "clock.fill")
-                    Text("Hourly weather")
-            }
+            .navigationBarTitle("Weather ⛅️", displayMode: .inline)
+            .navigationBarItems(trailing:
+                citiesBarButton
+            )
         }
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        WeatherForecast(viewModel: WeatherForecastViewModel(builder: WeatherForecastBuilder()))
+private extension WeatherForecast {
+    var citiesBarButton: some View {
+        ZStack {
+            NavigationLink(destination: router.cityList,
+                           tag: WeatherNavigationTag.showCityList,
+                           selection: $viewModel.navigationTag,
+                           label: { EmptyView() })
+            Button(action: {
+                self.viewModel.didTapCitiesButton()
+            }, label: {
+                Text("Cities")
+            })
+        }
     }
 }

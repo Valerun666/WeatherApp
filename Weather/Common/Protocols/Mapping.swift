@@ -1,13 +1,15 @@
 //
-//  CityListPresentable.swift
+//  Mapping.swift
 //  WeatherApp
 //
 //  Created by Valerii Teptiuk on 11.08.2020.
 //  Copyright © 2020 Valerii Teptiuk. All rights reserved.
 //
 
-import SwiftUI
+protocol Mapping {
+    associatedtype From
+    associatedtype To
 
-protocol CityListPresentable {
-    var cityList: AnyView { get }
+    func map(_ item: From) -> To?
 }
+

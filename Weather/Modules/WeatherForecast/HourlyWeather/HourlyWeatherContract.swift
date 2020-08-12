@@ -8,6 +8,21 @@
 
 import SwiftUI
 
-protocol HourlyWeatherViewModelProtocol: ViewModel, CityListPresentable {
+enum HourlyWeatherNavigationTag: String {
+    case showHourlyWeatherDetails
+}
+
+protocol HourlyWeatherViewModelProtocol: ViewModel {
     var state: ViewState<[HourlyWeatherSectionViewModel]> { get }
+    var navigationTag: HourlyWeatherNavigationTag? { get set }
+
+    func didTapOnCell(index: Int)
+}
+
+protocol HourlyWeatherRouterOutput: Router {
+    var hourlyWeatherDetails: AnyView { get set }
+}
+
+protocol HourlyWeatherRouterInput {
+    func showHourlyWeatherDetails()
 }

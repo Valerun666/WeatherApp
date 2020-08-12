@@ -9,25 +9,18 @@
 import SwiftUI
 
 final class WeatherForecastViewModel {
-    private let builder: WeatherForecastBuiling
+    private let router: WeatherForecastRouterInput
+    @Published var navigationTag: WeatherNavigationTag?
 
-    init(builder: WeatherForecastBuiling) {
-        self.builder = builder
+
+    init(router: WeatherForecastRouterInput) {
+        self.router = router
     }
 }
 
 extension WeatherForecastViewModel: WeatherForecastViewModelProtocol {
-    var currentWeatherView: AnyView {
-        let networkClient = NetworkClient(urlBuilder: URLBuilder())
-        return builder.buildCurrentWeatherForecastView(networkClient: networkClient,
-                                                       storage: CityPersistanceCoordinator(),
-                                                       cityListBuilder: CityListViewBuilder())
-    }
-
-    var hourlyWeatherView: AnyView {
-        let networkClient = NetworkClient(urlBuilder: URLBuilder())
-        return builder.buildHourlyWeatherForecastView(networkClient: networkClient,
-                                                      storage: CityPersistanceCoordinator(),
-                                                      cityListBuilder: CityListViewBuilder())
+    func didTapCitiesButton() {
+        router.showCityList()
+        navigationTag = .showCityList
     }
 }

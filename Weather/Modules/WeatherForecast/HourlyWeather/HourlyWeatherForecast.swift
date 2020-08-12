@@ -8,26 +8,19 @@
 
 import SwiftUI
 
-struct HourlyWeatherForecast<ViewModel: HourlyWeatherViewModelProtocol>: View {
-    let viewModel: ViewModel
+struct HourlyWeatherForecast<ViewModel: HourlyWeatherViewModelProtocol, Router: HourlyWeatherRouterOutput>: View {
+    @ObservedObject var viewModel: ViewModel
+    @ObservedObject var router: Router
 
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, router: Router) {
         self.viewModel = viewModel
+        self.router = router
     }
     
     var body: some View {
-        NavigationView {
-            contentView
-                .navigationBarTitle("Weather ⛅️", displayMode: .inline)
-                .navigationBarItems(trailing:
-                    NavigationLink(destination: viewModel.cityList) {
-                        Text("Cities")
-                    }
-                )
-        }
+        contentView
     }
 }
-
 
 private extension HourlyWeatherForecast {
     var contentView: some View {
@@ -37,27 +30,47 @@ private extension HourlyWeatherForecast {
         case .data(let weatherForecast):
             return AnyView(contentView(with: weatherForecast))
         case .error:
-            return AnyView(Text("Error"))
+            return AnyView(Text("Something went wrong..."))
         case .empty:
             return AnyView(Text("No yet any city. Please add the city to the list"))
         }
     }
 
     func contentView(with forecast: [HourlyWeatherSectionViewModel]) -> some View {
-        List {
-            ForEach(forecast) { model in
-                Group {
-                    Section {
-                        Text(model.name)
-                    }
-                    Section {
-                        ForEach(model.hourlyForecast) { model in
-                            HourlyWeatherRow(viewModel: model)
+        let withIndex = forecast.enumerated().map({ $0 })
+
+        return ZStack {
+            NavigationLink(destination: router.hourlyWeatherDetails,
+                           tag: HourlyWeatherNavigationTag.showHourlyWeatherDetails,
+                           selection: $viewModel.navigationTag,
+                           label: { EmptyView() })
+            List {
+                ForEach(withIndex, id: \.element.city) { index, model in
+                    Group {
+                        self.rowFor(index: index, model: model)
+                        Section {
+                            ForEach(model.hourlyForecast) { model in
+                                HourlyWeatherRow(viewModel: model)
+                            }
                         }
                     }
                 }
             }
+            .listStyle(GroupedListStyle())
         }
-        .listStyle(GroupedListStyle())
+    }
+
+    func rowFor(index: Int, model: HourlyWeatherSectionViewModel) -> some View {
+        Button(action: {
+            self.viewModel.didTapOnCell(index: index)
+        }, label: {
+            Text(model.city)
+        })
+    }
+}
+
+struct HourlyWeatherForecast_Previews: PreviewProvider {
+    static var previews: some View {
+        /*@START_MENU_TOKEN@*/Text("Hello, World!")/*@END_MENU_TOKEN@*/
     }
 }

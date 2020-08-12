@@ -12,6 +12,7 @@ import SwiftUI
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    var startCoordinator: StartCoordinatorProtcol!
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -21,9 +22,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
 
-
-        let viewModel = WeatherForecastViewModel(builder: WeatherForecastBuilder())
-        let contentView = WeatherForecast(viewModel: viewModel)
+        self.startCoordinator = StartCoordinator()
+        let contentView = startCoordinator.initialModule
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {

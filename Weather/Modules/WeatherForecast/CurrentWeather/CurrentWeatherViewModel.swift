@@ -11,6 +11,7 @@ import Combine
 
 final class CurrentWeatherViewModel {
     @Published private(set) var state: ViewState<[CurrentWeatherRowViewModel]> = .loading
+    @Published var navigationTag: CurrentWeatherNavigationTag? = nil
 
     private var weatherForecasts = [CurrentWeatherRowViewModel]() {
         didSet {
@@ -24,18 +25,18 @@ final class CurrentWeatherViewModel {
 
     private let networkClient: NetworkClientType
     private let storage: CityPersistanceStoreProtocol
-    private let builder: CityListViewBuilding
+    private let router: CurrentWeatherRouterInput
 
     private var disposables = Set<AnyCancellable>()
 
     init(networkClient: NetworkClientType,
          storage: CityPersistanceStoreProtocol,
-         builder: CityListViewBuilding) {
+         router: CurrentWeatherRouterInput) {
         self.networkClient = networkClient
         self.storage = storage
-        self.builder = builder
+        self.router = router
 
-        //MARK: Remove!!!!
+        //MARK: Remove after AddCity will be ready
         testData()
 
         refreshData()
@@ -43,8 +44,9 @@ final class CurrentWeatherViewModel {
 }
 
 extension CurrentWeatherViewModel: CurrentWeatherViewModelProtocol {
-    var cityList: AnyView {
-        builder.buildCityListView(storage: storage, builder: CityListBuilder())
+    func didTapOnCell(index: Int) {
+        router.showCurrentWeatherDetails(response[index])
+        navigationTag = .showCurrentWeatherDetails
     }
 }
 

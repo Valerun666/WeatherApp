@@ -11,6 +11,7 @@ import Combine
 
 final class HourlyWeatherViewModel {
     @Published private(set) var state: ViewState<[HourlyWeatherSectionViewModel]> = .loading
+    @Published var navigationTag: HourlyWeatherNavigationTag?
 
     private var weatherForecasts = [HourlyWeatherSectionViewModel]() {
         didSet {
@@ -19,27 +20,31 @@ final class HourlyWeatherViewModel {
             }
         }
     }
-    private var response = [HourlyWeatherForecastResponse]()
+    private var data = [HourlyWeatherForecastModel]()
 
     private let networkClient: NetworkClientType
     private let storage: CityPersistanceStoreProtocol
-    private let builder: CityListViewBuilding
+    private let mapper: HourlyWeatherMapper
+    private let router: HourlyWeatherRouterInput
 
     private var disposables = Set<AnyCancellable>()
     
     init(networkClient: NetworkClientType,
          storage: CityPersistanceStoreProtocol,
-         builder: CityListViewBuilding) {
+         mapper: HourlyWeatherMapper,
+         router: HourlyWeatherRouterInput) {
         self.networkClient = networkClient
         self.storage = storage
-        self.builder = builder
+        self.mapper = mapper
+        self.router = router
         refreshData()
     }
 }
 
 extension HourlyWeatherViewModel: HourlyWeatherViewModelProtocol {
-    var cityList: AnyView {
-        builder.buildCityListView(storage: storage, builder: CityListBuilder())
+    func didTapOnCell(index: Int) {
+        router.showHourlyWeatherDetails()
+        navigationTag = .showHourlyWeatherDetails
     }
 }
 
@@ -48,6 +53,8 @@ private extension HourlyWeatherViewModel {
         state = .loading
         weatherForecasts = []
         let cities = storage.fetch()
+        mapper.setupCityList(cityList: cities)
+
         let publishers = cities.compactMap({ [weak self] city in
             self?.networkClient.execute(request: WeatherServiceProvider.hourlyForecast(lat: "\(city.lat)",
                 lon: "\(city.lon)"), with: HourlyWeatherForecastResponse.self)
@@ -64,9 +71,18 @@ private extension HourlyWeatherViewModel {
                 }
             }, receiveValue: { [weak self] response in
                 guard let self = self else { return }
-                self.response.append(response)
-                self.weatherForecasts.append(HourlyWeatherSectionViewModel(item: response))
+                self.updateData(with: response)
             })
             .store(in: &disposables)
+    }
+
+    func updateData(with response: HourlyWeatherForecastResponse) {
+        guard let result = self.mapper.map(response) else {
+            state = .error
+            return
+        }
+
+        self.data.append(result)
+        self.weatherForecasts.append(HourlyWeatherSectionViewModel(item: result))
     }
 }

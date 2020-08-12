@@ -8,6 +8,21 @@
 
 import SwiftUI
 
-protocol CurrentWeatherViewModelProtocol: ViewModel, CityListPresentable {
+enum CurrentWeatherNavigationTag: String {
+    case showCurrentWeatherDetails
+}
+
+protocol CurrentWeatherViewModelProtocol: ViewModel {
     var state: ViewState<[CurrentWeatherRowViewModel]> { get }
+    var navigationTag: CurrentWeatherNavigationTag? { get set }
+
+    func didTapOnCell(index: Int)
+}
+
+protocol CurrentWeatherRouterOutput: Router {
+    var currentWeatherDetails: AnyView { get set }
+}
+
+protocol CurrentWeatherRouterInput {
+    func showCurrentWeatherDetails(_ data: CurrentWeatherForecastResponse)
 }

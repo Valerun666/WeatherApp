@@ -7,11 +7,25 @@
 //
 
 import SwiftUI
+import Combine
+
+enum CityListNavigationTag: String {
+    case showAddCity
+}
 
 protocol CityListViewModelProtocol: ViewModel {
     var state: ViewState<[City]> { get }
-    var addCity: AnyView { get }
+    var navigationTag: CityListNavigationTag? { get set }
 
     func didLoad()
+    func didTapAddCity()
     func remove(at offsets: IndexSet)
+}
+
+protocol CityListRouterInput {
+    func showAddCity()
+}
+
+protocol CityListRouterOutput: Router {
+    var addCity: AnyView { get set }
 }

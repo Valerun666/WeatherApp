@@ -14,3 +14,4 @@ enum ViewState<T> {
     case data(T)
     case error
 }
+

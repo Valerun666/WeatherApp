@@ -8,23 +8,17 @@
 
 import SwiftUI
 
-struct CurrentWeatherForecast<ViewModel: CurrentWeatherViewModelProtocol>: View {
+struct CurrentWeatherForecast<ViewModel: CurrentWeatherViewModelProtocol, Router: CurrentWeatherRouterOutput>: View {
     @ObservedObject var viewModel: ViewModel
+    @ObservedObject var router: Router
 
-    init(viewModel: ViewModel) {
-      self.viewModel = viewModel
+    init(viewModel: ViewModel, router: Router) {
+        self.viewModel = viewModel
+        self.router = router
     }
     
     var body: some View {
-        NavigationView {
-            contentView
-                .navigationBarTitle("Weather ⛅️", displayMode: .inline)
-                .navigationBarItems(trailing:
-                    NavigationLink(destination: viewModel.cityList) {
-                        Text("Cities")
-                    }
-                )
-        }
+        contentView
     }
 }
 
@@ -36,27 +30,35 @@ private extension CurrentWeatherForecast {
         case .data(let weatherForecast):
             return AnyView(contentView(with: weatherForecast))
         case .error:
-            return AnyView(Text("Error"))
+            return AnyView(Text("Something went wrong..."))
         case .empty:
             return AnyView(Text("No yet any city. Please add the city to the list"))
         }
     }
 
     func contentView(with forecast: [CurrentWeatherRowViewModel]) -> some View {
-        List {
-            ForEach(forecast) { model in
-                Section {
-                    CurrentWeatherRow(viewModel: model)
+        let withIndex = forecast.enumerated().map({ $0 })
+        return ZStack {
+            NavigationLink(destination: router.currentWeatherDetails,
+                           tag: CurrentWeatherNavigationTag.showCurrentWeatherDetails,
+                           selection: $viewModel.navigationTag,
+                           label: { EmptyView() })
+            List {
+                ForEach(withIndex, id: \.element.id) { index, model in
+                    Section {
+                        self.rowFor(index: index, model: model)
+                    }
                 }
             }
+            .listStyle(GroupedListStyle())
         }
-        .listStyle(GroupedListStyle())
     }
-}
 
-struct CurrentWeatherForecast_Previews: PreviewProvider {
-    static var previews: some View {
-        CurrentWeatherForecast(viewModel: CurrentWeatherViewModel(networkClient: NetworkClient(urlBuilder: URLBuilder()),
-                                                                  storage: CityPersistanceCoordinator(), builder: CityListViewBuilder()))
+    func rowFor(index: Int, model: CurrentWeatherRowViewModel) -> some View {
+        Button(action: {
+            self.viewModel.didTapOnCell(index: index)
+        }, label: {
+            CurrentWeatherRow(viewModel: model)
+        })
     }
 }

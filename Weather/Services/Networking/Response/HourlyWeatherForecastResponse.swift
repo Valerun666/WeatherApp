@@ -9,66 +9,46 @@
 import Foundation
 
 struct HourlyWeatherForecastResponse: Codable {
-    let forecasts: [HourlyForecast]
-    let city: City
-
+    let forecast: [HourlyForecast]
+    let lat: Double
+    let lon: Double
+    let timezone: String
+    
     enum CodingKeys: String, CodingKey {
-        case forecasts = "list"
-        case city
+        case forecast = "hourly"
+        case lat, lon
+        case timezone
     }
 }
 
-struct City: Codable {
-    let id: Int
-    let name: String
-    let coord: Coord
-    let country: String
-    let sunrise: Int
-    let sunset: Int
-
-    struct Coord: Codable {
-        let lat, lon: Double
-    }
-}
 
 struct HourlyForecast: Codable {
     let time: Int
-    let temperature: HourlyTemperature
+    let temperature: Double
+    let feelsLike: Double
+    let pressure: Int
+    let humidity: Int
+    let windSpeed: Double
+    let windDeg: Int
     let weather: [Weather]
-    let timeTxt: String
 
     enum CodingKeys: String, CodingKey {
         case time = "dt"
-        case timeTxt = "dt_txt"
-        case temperature = "main"
-        case weather
-    }
-}
-
-struct HourlyTemperature: Codable {
-    let temp: Double
-    let feelsLike: Double
-    let tempMin: Double
-    let tempMax: Double
-
-    enum CodingKeys: String, CodingKey {
-        case temp
         case feelsLike = "feels_like"
-        case tempMin = "temp_min"
-        case tempMax = "temp_max"
+        case pressure, humidity
+        case windSpeed = "wind_speed"
+        case windDeg = "wind_deg"
+        case weather
+        case temperature = "temp"
     }
 }
 
 struct Weather: Codable {
-    let id: Int
     let main: String
     let weatherDescription: String
-    let icon: String
 
     enum CodingKeys: String, CodingKey {
-        case id, main
+        case main
         case weatherDescription = "description"
-        case icon
     }
 }
-
