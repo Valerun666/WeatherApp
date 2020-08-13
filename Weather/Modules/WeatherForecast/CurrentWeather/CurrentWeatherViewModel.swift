@@ -35,10 +35,6 @@ final class CurrentWeatherViewModel {
         self.networkClient = networkClient
         self.storage = storage
         self.router = router
-
-        //MARK: Remove after AddCity will be ready
-        testData()
-
         refreshData()
     }
 }
@@ -61,6 +57,12 @@ private extension CurrentWeatherViewModel {
         weatherForecasts = []
         response = []
         let cities = storage.fetch()
+
+        guard !cities.isEmpty else {
+            state = .empty
+            return
+        }
+
         let publishers = cities.compactMap({ [weak self] city in
             self?.networkClient.execute(request: WeatherServiceProvider.currentWeather(cityId: city.name),
                                         with: CurrentWeatherForecastResponse.self)

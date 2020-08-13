@@ -18,7 +18,8 @@ final class CityListViewModel {
             }
         }
     }
-    var navigationTagDidChanged = PassthroughSubject<Void,Never>()
+    var newCity = PassthroughSubject<City?, Never>()
+    private var disposables = Set<AnyCancellable>()
 
     private let storage: CityPersistanceStoreProtocol
     private let router: CityListRouterInput
@@ -32,6 +33,7 @@ final class CityListViewModel {
 extension CityListViewModel: CityListViewModelProtocol {
     func didLoad() {
         updateCityList()
+        subscribeOnCityUpdate()
     }
 
     func remove(at offsets: IndexSet) {
@@ -40,7 +42,7 @@ extension CityListViewModel: CityListViewModelProtocol {
     }
     
     func didTapAddCity() {
-        router.showAddCity()
+        router.showAddCity(city: newCity)
         navigationTag = .showAddCity
     }
 }
@@ -54,5 +56,20 @@ private extension CityListViewModel {
         } else {
             state = .data(cityList)
         }
+    }
+
+    func didAddNewCity(_ city: City?) {
+        guard let city = city else {
+            return
+        }
+        storage.add(city)
+        updateCityList()
+    }
+
+    func subscribeOnCityUpdate() {
+        newCity.sink { [weak self] city in
+            self?.didAddNewCity(city)
+        }
+        .store(in: &disposables)
     }
 }

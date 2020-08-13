@@ -55,6 +55,11 @@ private extension HourlyWeatherViewModel {
         let cities = storage.fetch()
         mapper.setupCityList(cityList: cities)
 
+        guard !cities.isEmpty else {
+            state = .empty
+            return
+        }
+        
         let publishers = cities.compactMap({ [weak self] city in
             self?.networkClient.execute(request: WeatherServiceProvider.hourlyForecast(lat: "\(city.lat)",
                 lon: "\(city.lon)"), with: HourlyWeatherForecastResponse.self)

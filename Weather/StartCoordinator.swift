@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import GooglePlaces
 
 protocol StartCoordinatorProtcol {
     var initialModule: AnyView { get }
@@ -15,6 +16,10 @@ protocol StartCoordinatorProtcol {
 }
 
 final class StartCoordinator: StartCoordinatorProtcol {
+    init() {
+        GMSPlacesClient.provideAPIKey(Constants.GooglePlacesApiKey)
+    }
+
     var initialModule: AnyView {
         let router = WeatherForecastRouter(storage: CityPersistanceCoordinator())
         let weatherForecastViewModel = WeatherForecastViewModel(router: router)

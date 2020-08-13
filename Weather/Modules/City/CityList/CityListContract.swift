@@ -23,7 +23,7 @@ protocol CityListViewModelProtocol: ViewModel {
 }
 
 protocol CityListRouterInput {
-    func showAddCity()
+    func showAddCity(city: PassthroughSubject<City?, Never>)
 }
 
 protocol CityListRouterOutput: Router {

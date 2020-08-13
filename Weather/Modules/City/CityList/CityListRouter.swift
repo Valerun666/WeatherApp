@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 final class CityListRouter: CityListRouterOutput {
     var addCity: AnyView = .init(EmptyView())
@@ -14,7 +15,7 @@ final class CityListRouter: CityListRouterOutput {
 }
 
 extension CityListRouter: CityListRouterInput {
-    func showAddCity() {
-        addCity = AnyView(Text("Add city"))
+    func showAddCity(city: PassthroughSubject<City?, Never>) {
+        addCity = AnyView(AddCity(cityPublisher: city))
     }
 }
