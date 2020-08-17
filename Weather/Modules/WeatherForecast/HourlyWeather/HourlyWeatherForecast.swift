@@ -18,7 +18,9 @@ struct HourlyWeatherForecast<ViewModel: HourlyWeatherViewModelProtocol, Router: 
     }
     
     var body: some View {
-        contentView
+        VStack {
+            contentView
+        }
     }
 }
 
@@ -37,26 +39,16 @@ private extension HourlyWeatherForecast {
     }
 
     func contentView(with forecast: [HourlyWeatherSectionViewModel]) -> some View {
-        let withIndex = forecast.enumerated().map({ $0 })
-
-        return ZStack {
+        ZStack {
             NavigationLink(destination: router.hourlyWeatherDetails,
                            tag: HourlyWeatherNavigationTag.showHourlyWeatherDetails,
                            selection: $viewModel.navigationTag,
                            label: { EmptyView() })
-            List {
-                ForEach(withIndex, id: \.element.timeZone) { index, model in
-                    Group {
-                        self.rowFor(index: index, model: model)
-                        Section {
-                            ForEach(model.hourlyForecast) { model in
-                                HourlyWeatherRow(viewModel: model)
-                            }
-                        }
-                    }
+            GeometryReader { (geometry) in
+                ScrollView(width: geometry.size.width, height: geometry.size.height, viewModel: self.viewModel) {
+                    self.listView(forecast: forecast)
                 }
             }
-            .listStyle(GroupedListStyle())
         }
     }
 
@@ -66,5 +58,25 @@ private extension HourlyWeatherForecast {
         }, label: {
             Text("Timezone: \(model.timeZone)")
         })
+    }
+}
+
+private extension HourlyWeatherForecast {
+    func listView(forecast: [HourlyWeatherSectionViewModel]) -> some View  {
+        let withIndex = forecast.enumerated().map({ $0 })
+
+        return List {
+            ForEach(withIndex, id: \.element.timeZone) { index, model in
+                Group {
+                    self.rowFor(index: index, model: model)
+                    Section {
+                        ForEach(model.hourlyForecast) { model in
+                            HourlyWeatherRow(viewModel: model)
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(GroupedListStyle())
     }
 }

@@ -35,23 +35,33 @@ private extension CurrentWeatherForecast {
             return AnyView(Text("No yet any city. Please add the city to the list"))
         }
     }
+    
 
     func contentView(with forecast: [CurrentWeatherRowViewModel]) -> some View {
-        let withIndex = forecast.enumerated().map({ $0 })
-        return ZStack {
+        ZStack {
             NavigationLink(destination: router.currentWeatherDetails,
                            tag: CurrentWeatherNavigationTag.showCurrentWeatherDetails,
                            selection: $viewModel.navigationTag,
                            label: { EmptyView() })
-            List {
-                ForEach(withIndex, id: \.element.id) { index, model in
-                    Section {
-                        self.rowFor(index: index, model: model)
-                    }
+            GeometryReader { (geometry) in
+                ScrollView(width: geometry.size.width, height: geometry.size.height, viewModel: self.viewModel) {
+                    self.listView(with: forecast)
                 }
             }
-            .listStyle(GroupedListStyle())
         }
+    }
+
+    func listView(with forecast: [CurrentWeatherRowViewModel]) -> some View  {
+        let withIndex = forecast.enumerated().map({ $0 })
+        
+        return List {
+            ForEach(withIndex, id: \.element.id) { index, model in
+                Section {
+                    self.rowFor(index: index, model: model)
+                }
+            }
+        }
+        .listStyle(GroupedListStyle())
     }
 
     func rowFor(index: Int, model: CurrentWeatherRowViewModel) -> some View {

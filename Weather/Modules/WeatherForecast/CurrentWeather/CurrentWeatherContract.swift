@@ -12,7 +12,7 @@ enum CurrentWeatherNavigationTag: String {
     case showCurrentWeatherDetails
 }
 
-protocol CurrentWeatherViewModelProtocol: ViewModel {
+protocol CurrentWeatherViewModelProtocol: ViewModel, RefreshableViewModel {
     var state: ViewState<[CurrentWeatherRowViewModel]> { get }
     var navigationTag: CurrentWeatherNavigationTag? { get set }
 

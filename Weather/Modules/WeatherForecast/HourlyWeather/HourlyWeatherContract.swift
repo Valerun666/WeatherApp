@@ -12,7 +12,7 @@ enum HourlyWeatherNavigationTag: String {
     case showHourlyWeatherDetails
 }
 
-protocol HourlyWeatherViewModelProtocol: ViewModel {
+protocol HourlyWeatherViewModelProtocol: ViewModel, RefreshableViewModel {
     var state: ViewState<[HourlyWeatherSectionViewModel]> { get }
     var navigationTag: HourlyWeatherNavigationTag? { get set }
 

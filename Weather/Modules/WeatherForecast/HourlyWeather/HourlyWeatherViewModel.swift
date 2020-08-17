@@ -44,6 +44,10 @@ extension HourlyWeatherViewModel: HourlyWeatherViewModelProtocol {
         router.showHourlyWeatherDetails(data: data[index])
         navigationTag = .showHourlyWeatherDetails
     }
+
+    func refresh() {
+        refreshData()
+    }
 }
 
 private extension HourlyWeatherViewModel {
@@ -65,7 +69,8 @@ private extension HourlyWeatherViewModel {
         }
         
         Publishers.MergeMany(publishers(for: cities))
-            .receive(on: DispatchQueue.main)
+            .receive(on: DispatchQueue.global())
+            .collect()
             .sink(receiveCompletion: { [weak self] value in
                 guard let self = self else { return }
                 print(value)
@@ -87,8 +92,11 @@ private extension HourlyWeatherViewModel {
         })
     }
 
-    func updateData(with response: HourlyWeatherForecastResponse) {
-        self.data.append(response)
-        self.weatherForecasts.append(HourlyWeatherSectionViewModel(item: response))
+    func updateData(with response: [HourlyWeatherForecastResponse]) {
+        self.data.append(contentsOf: response)
+        let result = response.map(HourlyWeatherSectionViewModel.init(item:))
+        DispatchQueue.main.async { [weak self] in
+            self?.weatherForecasts.append(contentsOf: result)
+        }
     }
 }

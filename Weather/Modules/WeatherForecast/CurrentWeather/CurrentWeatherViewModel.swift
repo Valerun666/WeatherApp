@@ -45,6 +45,10 @@ extension CurrentWeatherViewModel: CurrentWeatherViewModelProtocol {
         router.showCurrentWeatherDetails(response[index])
         navigationTag = .showCurrentWeatherDetails
     }
+
+    func refresh() {
+        refreshData()
+    }
 }
 
 private extension CurrentWeatherViewModel {
@@ -71,7 +75,8 @@ private extension CurrentWeatherViewModel {
         }
 
         Publishers.MergeMany(publishers)
-            .receive(on: DispatchQueue.main)
+            .receive(on: DispatchQueue.global())
+            .collect()
             .sink(receiveCompletion: { [weak self] value in
                 guard let self = self else { return }
                 print(value)
@@ -81,9 +86,16 @@ private extension CurrentWeatherViewModel {
                 }
                 }, receiveValue: { [weak self] response in
                     guard let self = self else { return }
-                    self.response.append(response)
-                    self.weatherForecasts.append(CurrentWeatherRowViewModel(item: response))
+                    self.updateData(with: response)
             })
             .store(in: &disposables)
+    }
+
+    func updateData(with response: [CurrentWeatherForecastResponse]) {
+        self.response.append(contentsOf: response)
+        let result = response.map(CurrentWeatherRowViewModel.init(item:))
+        DispatchQueue.main.async {
+            self.weatherForecasts.append(contentsOf: result)
+        }
     }
 }
