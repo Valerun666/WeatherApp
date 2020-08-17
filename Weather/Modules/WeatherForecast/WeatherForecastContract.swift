@@ -17,7 +17,7 @@ protocol WeatherForecastRouterOutput: Router {
 }
 
 protocol WeatherForecastRouterInput {
-    func showCityList()
+    func showCityList(persistentStorage: CityPersistenceStoreProtocol)
 }
 
 protocol WeatherForecastViewModelProtocol: ViewModel {

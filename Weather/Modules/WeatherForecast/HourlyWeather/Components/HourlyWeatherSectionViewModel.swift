@@ -9,12 +9,11 @@
 import Foundation
 
 struct HourlyWeatherSectionViewModel {
-    let city: String
+    let timeZone: String
     let hourlyForecast: [HourlyWeatherRowViewModel]
 
-    init(item: HourlyWeatherForecastModel) {
-        self.city = item.city.name
+    init(item: HourlyWeatherForecastResponse) {
+        self.timeZone = item.timezone.replacingOccurrences(of: "_", with: " ")
         self.hourlyForecast = item.forecast.map(HourlyWeatherRowViewModel.init(item: ))
     }
-
 }

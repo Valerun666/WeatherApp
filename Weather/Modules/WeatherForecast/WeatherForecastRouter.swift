@@ -11,17 +11,17 @@ import SwiftUI
 final class WeatherForecastRouter: WeatherForecastRouterOutput {
     @Published var cityList: AnyView = .init(EmptyView())
 
-    private let storage: CityPersistanceStoreProtocol
+    private let storage: CityPersistenceStoreProtocol
 
-    init(storage: CityPersistanceStoreProtocol) {
+    init(storage: CityPersistenceStoreProtocol) {
         self.storage = storage
     }
 }
 
 extension WeatherForecastRouter: WeatherForecastRouterInput {
-    func showCityList() {
+    func showCityList(persistentStorage: CityPersistenceStoreProtocol) {
         let router = CityListRouter()
-        let cityListViewModel = CityListViewModel(storage: storage, router: router)
+        let cityListViewModel = CityListViewModel(persistentStorage: persistentStorage, router: router)
         cityList = AnyView(CityList(viewModel: cityListViewModel, router: router))
     }
 }

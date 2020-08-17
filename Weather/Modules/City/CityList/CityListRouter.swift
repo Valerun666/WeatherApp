@@ -15,7 +15,8 @@ final class CityListRouter: CityListRouterOutput {
 }
 
 extension CityListRouter: CityListRouterInput {
-    func showAddCity(city: PassthroughSubject<City?, Never>) {
-        addCity = AnyView(AddCity(cityPublisher: city))
+    func showAddCity(persistentStorage: CityPersistenceStoreProtocol) {
+        let viewModel = AddCityViewModel(persistentStorage: persistentStorage)
+        addCity = AnyView(AddCity(viewModel: viewModel))
     }
 }

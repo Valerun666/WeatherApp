@@ -45,7 +45,7 @@ private extension HourlyWeatherForecast {
                            selection: $viewModel.navigationTag,
                            label: { EmptyView() })
             List {
-                ForEach(withIndex, id: \.element.city) { index, model in
+                ForEach(withIndex, id: \.element.timeZone) { index, model in
                     Group {
                         self.rowFor(index: index, model: model)
                         Section {
@@ -64,7 +64,7 @@ private extension HourlyWeatherForecast {
         Button(action: {
             self.viewModel.didTapOnCell(index: index)
         }, label: {
-            Text(model.city)
+            Text("Timezone: \(model.timeZone)")
         })
     }
 }

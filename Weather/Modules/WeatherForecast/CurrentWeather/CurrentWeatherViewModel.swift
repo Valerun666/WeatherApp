@@ -9,9 +9,10 @@
 import SwiftUI
 import Combine
 
-final class CurrentWeatherViewModel {
+class CurrentWeatherViewModel {
     @Published private(set) var state: ViewState<[CurrentWeatherRowViewModel]> = .loading
     @Published var navigationTag: CurrentWeatherNavigationTag? = nil
+    private let persistentStorage: CityPersistenceStoreProtocol
 
     private var weatherForecasts = [CurrentWeatherRowViewModel]() {
         didSet {
@@ -24,18 +25,18 @@ final class CurrentWeatherViewModel {
     private var response = [CurrentWeatherForecastResponse]()
 
     private let networkClient: NetworkClientType
-    private let storage: CityPersistanceStoreProtocol
     private let router: CurrentWeatherRouterInput
 
     private var disposables = Set<AnyCancellable>()
 
     init(networkClient: NetworkClientType,
-         storage: CityPersistanceStoreProtocol,
+         persistentStorage: CityPersistenceStoreProtocol,
          router: CurrentWeatherRouterInput) {
         self.networkClient = networkClient
-        self.storage = storage
+        self.persistentStorage = persistentStorage
         self.router = router
-        refreshData()
+        self.subscribeOnStorageUpdate()
+        self.refreshData()
     }
 }
 
@@ -47,26 +48,27 @@ extension CurrentWeatherViewModel: CurrentWeatherViewModelProtocol {
 }
 
 private extension CurrentWeatherViewModel {
-    func testData() {
-        storage.add(City(name: "Moscow", lat: 60.99, lon: 30.9))
-        storage.add(City(name: "Chicago", lat: 33.441792, lon: -94.037689))
+    func subscribeOnStorageUpdate() {
+        persistentStorage.storageDidChange.sink { [weak self] value in
+            self?.refreshData()
+        }.store(in: &disposables)
     }
 
     func refreshData() {
         state = .loading
         weatherForecasts = []
         response = []
-        let cities = storage.fetch()
+        let cities = persistentStorage.fetch()
 
         guard !cities.isEmpty else {
             state = .empty
             return
         }
 
-        let publishers = cities.compactMap({ [weak self] city in
+        let publishers = cities.compactMap { [weak self] city in
             self?.networkClient.execute(request: WeatherServiceProvider.currentWeather(cityId: city.name),
-                                        with: CurrentWeatherForecastResponse.self)
-        })
+            with: CurrentWeatherForecastResponse.self)
+        }
 
         Publishers.MergeMany(publishers)
             .receive(on: DispatchQueue.main)
@@ -77,10 +79,10 @@ private extension CurrentWeatherViewModel {
                 case .failure: self.state = .error
                 case .finished: break
                 }
-            }, receiveValue: { [weak self] response in
-                guard let self = self else { return }
-                self.response.append(response)
-                self.weatherForecasts.append(CurrentWeatherRowViewModel(item: response))
+                }, receiveValue: { [weak self] response in
+                    guard let self = self else { return }
+                    self.response.append(response)
+                    self.weatherForecasts.append(CurrentWeatherRowViewModel(item: response))
             })
             .store(in: &disposables)
     }

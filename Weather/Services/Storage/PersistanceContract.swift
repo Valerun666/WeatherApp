@@ -7,12 +7,18 @@
 //
 
 import Foundation
+import Combine
 
-protocol CityPersistanceStoreProtocol {
+protocol CityPersistenceStoreProtocol {
     func add(_ city: City)
     func remove(_ city: City) -> City?
     func remove(at offsets: IndexSet)
     func fetch() -> [City]
 
+    var storageDidChange: Publishers.Multicast<PassthroughSubject<[City], Never>,
+        PassthroughSubject<[City], Never>> { get }
 }
+
+
+
 

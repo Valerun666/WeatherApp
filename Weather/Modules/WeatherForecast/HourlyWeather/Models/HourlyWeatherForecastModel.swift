@@ -9,6 +9,8 @@
 import Foundation
 
 struct HourlyWeatherForecastModel {
-    let city: City
+    let city: String
+    let lat: Double
+    let lon: Double
     let forecast: [HourlyForecast]
 }

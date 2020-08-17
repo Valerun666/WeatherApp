@@ -10,17 +10,19 @@ import SwiftUI
 
 final class WeatherForecastViewModel {
     private let router: WeatherForecastRouterInput
+    private let persistentStorage: CityPersistenceStoreProtocol
     @Published var navigationTag: WeatherNavigationTag?
 
 
-    init(router: WeatherForecastRouterInput) {
+    init(router: WeatherForecastRouterInput, persistentStorage: CityPersistenceStoreProtocol) {
         self.router = router
+        self.persistentStorage = persistentStorage
     }
 }
 
 extension WeatherForecastViewModel: WeatherForecastViewModelProtocol {
     func didTapCitiesButton() {
-        router.showCityList()
+        router.showCityList(persistentStorage: persistentStorage)
         navigationTag = .showCityList
     }
 }

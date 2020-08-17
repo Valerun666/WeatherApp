@@ -18,58 +18,48 @@ final class CityListViewModel {
             }
         }
     }
-    var newCity = PassthroughSubject<City?, Never>()
-    private var disposables = Set<AnyCancellable>()
+    private let persistentStorage: CityPersistenceStoreProtocol
 
-    private let storage: CityPersistanceStoreProtocol
+    private var disposables = Set<AnyCancellable>()
     private let router: CityListRouterInput
 
-    init(storage: CityPersistanceStoreProtocol, router: CityListRouterInput) {
-        self.storage = storage
+    init(persistentStorage: CityPersistenceStoreProtocol, router: CityListRouterInput) {
+        self.persistentStorage = persistentStorage
         self.router = router
     }
 }
 
 extension CityListViewModel: CityListViewModelProtocol {
     func didLoad() {
-        updateCityList()
-        subscribeOnCityUpdate()
+        subscribeOnStorageUpdate()
+        loadCities()
     }
 
     func remove(at offsets: IndexSet) {
-        storage.remove(at: offsets)
-        updateCityList()
+        persistentStorage.remove(at: offsets)
     }
     
     func didTapAddCity() {
-        router.showAddCity(city: newCity)
+        router.showAddCity(persistentStorage: persistentStorage)
         navigationTag = .showAddCity
     }
 }
 
 private extension CityListViewModel {
-    func updateCityList() {
-        state = .loading
-        let cityList = storage.fetch()
-        if cityList.isEmpty {
-            state = .empty
-        } else {
-            state = .data(cityList)
-        }
+    func subscribeOnStorageUpdate() {
+        persistentStorage.storageDidChange.sink { [weak self] city in
+            self?.state = .data(city)
+        }.store(in: &disposables)
     }
 
-    func didAddNewCity(_ city: City?) {
-        guard let city = city else {
+    func loadCities() {
+        state = .loading
+        let cities = persistentStorage.fetch()
+        guard !cities.isEmpty else {
+            state = .empty
             return
         }
-        storage.add(city)
-        updateCityList()
-    }
 
-    func subscribeOnCityUpdate() {
-        newCity.sink { [weak self] city in
-            self?.didAddNewCity(city)
-        }
-        .store(in: &disposables)
+        state = .data(cities)
     }
 }

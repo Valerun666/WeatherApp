@@ -16,13 +16,16 @@ protocol StartCoordinatorProtcol {
 }
 
 final class StartCoordinator: StartCoordinatorProtcol {
+    let persistentStorage: CityPersistanceCoordinator
+
     init() {
+        self.persistentStorage = CityPersistanceCoordinator()
         GMSPlacesClient.provideAPIKey(Constants.GooglePlacesApiKey)
     }
 
     var initialModule: AnyView {
         let router = WeatherForecastRouter(storage: CityPersistanceCoordinator())
-        let weatherForecastViewModel = WeatherForecastViewModel(router: router)
+        let weatherForecastViewModel = WeatherForecastViewModel(router: router, persistentStorage: persistentStorage)
         let view = WeatherForecast(viewModel: weatherForecastViewModel,
                                    router: router,
                                    currentWeatherView: currentWeather,
@@ -35,8 +38,9 @@ final class StartCoordinator: StartCoordinatorProtcol {
         let router = CurrentWeatherRouter()
         let networkClient = NetworkClient(urlBuilder: URLBuilder())
         let currentWeatherViewModel = CurrentWeatherViewModel(networkClient: networkClient,
-                                                              storage: CityPersistanceCoordinator(),
+                                                              persistentStorage: persistentStorage,
                                                               router: router)
+
         return AnyView(CurrentWeatherForecast(viewModel: currentWeatherViewModel, router: router))
     }
 
@@ -44,8 +48,7 @@ final class StartCoordinator: StartCoordinatorProtcol {
         let router = HourlyWeatherRouter()
         let networkClient = NetworkClient(urlBuilder: URLBuilder())
         let hourlyWeatherViewModel = HourlyWeatherViewModel(networkClient: networkClient,
-                                                            storage: CityPersistanceCoordinator(),
-                                                            mapper: HourlyWeatherMapper(),
+                                                            persistentStorage: persistentStorage,
                                                             router: router)
         return AnyView(HourlyWeatherForecast(viewModel: hourlyWeatherViewModel, router: router))
     }

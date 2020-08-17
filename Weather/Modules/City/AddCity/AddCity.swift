@@ -11,12 +11,12 @@ import Combine
 import GooglePlaces
 
 struct AddCity: UIViewControllerRepresentable {
-    var cityPublisher: PassthroughSubject<City?, Never>
+    var viewModel: AddCityViewModel
     let coordinator: Coordinator
 
-    init(cityPublisher: PassthroughSubject<City?, Never>) {
-        self.cityPublisher = cityPublisher
-        self.coordinator = Coordinator(cityPublisher: cityPublisher)
+    init(viewModel: AddCityViewModel) {
+        self.viewModel = viewModel
+        self.coordinator = Coordinator(viewModel: viewModel)
     }
 
     func makeUIViewController(context: Context) -> GMSAutocompleteViewController {
@@ -29,14 +29,14 @@ struct AddCity: UIViewControllerRepresentable {
     func updateUIViewController(_ controller: GMSAutocompleteViewController, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
-        return Coordinator(cityPublisher: cityPublisher)
+        return Coordinator(viewModel: viewModel)
     }
 
     class Coordinator: NSObject, GMSAutocompleteViewControllerDelegate {
-        var cityPublisher: PassthroughSubject<City?, Never>
+        var viewModel: AddCityViewModel
 
-        init(cityPublisher: PassthroughSubject<City?, Never>) {
-            self.cityPublisher = cityPublisher
+        init(viewModel: AddCityViewModel) {
+            self.viewModel = viewModel
         }
 
         func viewController(_ viewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
@@ -44,10 +44,9 @@ struct AddCity: UIViewControllerRepresentable {
             print("Place address: \(String(describing: place.formattedAddress))")
             print("Place attributions: \(String(describing: place.attributions))")
 
-            guard let name = place.name else {
-                return
-            }
-            cityPublisher.send(City(name: name, lat: place.coordinate.latitude, lon: place.coordinate.longitude))
+            viewModel.didSelect(place: place, onComplete: { [weak viewController] in
+                viewController?.dismiss(animated: true, completion: nil)
+            })
             viewController.dismiss(animated: true, completion: nil)
         }
         func viewController(_ viewController: GMSAutocompleteViewController, didFailAutocompleteWithError error: Error) {

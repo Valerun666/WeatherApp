@@ -12,6 +12,7 @@ import Combine
 final class HourlyWeatherViewModel {
     @Published private(set) var state: ViewState<[HourlyWeatherSectionViewModel]> = .loading
     @Published var navigationTag: HourlyWeatherNavigationTag?
+    private let persistentStorage: CityPersistenceStoreProtocol
 
     private var weatherForecasts = [HourlyWeatherSectionViewModel]() {
         didSet {
@@ -20,23 +21,20 @@ final class HourlyWeatherViewModel {
             }
         }
     }
-    private var data = [HourlyWeatherForecastModel]()
+    private var data = [HourlyWeatherForecastResponse]()
 
     private let networkClient: NetworkClientType
-    private let storage: CityPersistanceStoreProtocol
-    private let mapper: HourlyWeatherMapper
     private let router: HourlyWeatherRouterInput
 
     private var disposables = Set<AnyCancellable>()
     
     init(networkClient: NetworkClientType,
-         storage: CityPersistanceStoreProtocol,
-         mapper: HourlyWeatherMapper,
+         persistentStorage: CityPersistenceStoreProtocol,
          router: HourlyWeatherRouterInput) {
         self.networkClient = networkClient
-        self.storage = storage
-        self.mapper = mapper
+        self.persistentStorage = persistentStorage
         self.router = router
+        subscribeOnStorageUpdate()
         refreshData()
     }
 }
@@ -49,23 +47,24 @@ extension HourlyWeatherViewModel: HourlyWeatherViewModelProtocol {
 }
 
 private extension HourlyWeatherViewModel {
+    func subscribeOnStorageUpdate() {
+        persistentStorage.storageDidChange.sink { [weak self] value in
+            self?.refreshData()
+        }
+        .store(in: &disposables)
+    }
+
     func refreshData() {
         state = .loading
         weatherForecasts = []
-        let cities = storage.fetch()
-        mapper.setupCityList(cityList: cities)
+        let cities = persistentStorage.fetch()
 
         guard !cities.isEmpty else {
             state = .empty
             return
         }
         
-        let publishers = cities.compactMap({ [weak self] city in
-            self?.networkClient.execute(request: WeatherServiceProvider.hourlyForecast(lat: "\(city.lat)",
-                lon: "\(city.lon)"), with: HourlyWeatherForecastResponse.self)
-        })
-
-        Publishers.MergeMany(publishers)
+        Publishers.MergeMany(publishers(for: cities))
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] value in
                 guard let self = self else { return }
@@ -81,13 +80,15 @@ private extension HourlyWeatherViewModel {
             .store(in: &disposables)
     }
 
-    func updateData(with response: HourlyWeatherForecastResponse) {
-        guard let result = self.mapper.map(response) else {
-            state = .error
-            return
-        }
+    func publishers(for cities: [City]) -> [AnyPublisher<HourlyWeatherForecastResponse, Error>] {
+        return cities.compactMap({ [weak self] city in
+            self?.networkClient.execute(request: WeatherServiceProvider.hourlyForecast(lat: "\(city.lat)",
+                lon: "\(city.lon)"), with: HourlyWeatherForecastResponse.self)
+        })
+    }
 
-        self.data.append(result)
-        self.weatherForecasts.append(HourlyWeatherSectionViewModel(item: result))
+    func updateData(with response: HourlyWeatherForecastResponse) {
+        self.data.append(response)
+        self.weatherForecasts.append(HourlyWeatherSectionViewModel(item: response))
     }
 }
