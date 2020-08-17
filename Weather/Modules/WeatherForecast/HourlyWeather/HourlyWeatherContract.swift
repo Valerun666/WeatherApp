@@ -24,5 +24,5 @@ protocol HourlyWeatherRouterOutput: Router {
 }
 
 protocol HourlyWeatherRouterInput {
-    func showHourlyWeatherDetails()
+    func showHourlyWeatherDetails(data: HourlyWeatherForecastResponse)
 }

@@ -13,7 +13,8 @@ final class HourlyWeatherRouter: HourlyWeatherRouterOutput {
 }
 
 extension HourlyWeatherRouter: HourlyWeatherRouterInput {
-    func showHourlyWeatherDetails() {
-        hourlyWeatherDetails = AnyView(Text("HourlyWeatherDetails"))
+    func showHourlyWeatherDetails(data: HourlyWeatherForecastResponse) {
+        let viewModel = HourlyWeatherDetailsViewModel(data: data)
+        hourlyWeatherDetails = AnyView(HourlyWeatherDetails(viewModel: viewModel))
     }
 }

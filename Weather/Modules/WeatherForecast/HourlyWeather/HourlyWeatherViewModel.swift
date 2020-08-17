@@ -41,7 +41,7 @@ final class HourlyWeatherViewModel {
 
 extension HourlyWeatherViewModel: HourlyWeatherViewModelProtocol {
     func didTapOnCell(index: Int) {
-        router.showHourlyWeatherDetails()
+        router.showHourlyWeatherDetails(data: data[index])
         navigationTag = .showHourlyWeatherDetails
     }
 }

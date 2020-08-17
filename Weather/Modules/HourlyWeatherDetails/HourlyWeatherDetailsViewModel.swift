@@ -7,3 +7,13 @@
 //
 
 import Foundation
+
+final class HourlyWeatherDetailsViewModel: HourlyWeatherDetailsViewModelProtocol {
+    @Published private(set) var state: ViewState<HourlyWeatherForecastViewModel> = .loading
+    private let data: HourlyWeatherForecastResponse
+    
+    init(data: HourlyWeatherForecastResponse) {
+        self.data = data
+        state = .data(HourlyWeatherForecastViewModel(item: data))
+    }
+}

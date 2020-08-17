@@ -7,3 +7,7 @@
 //
 
 import Foundation
+
+protocol HourlyWeatherDetailsViewModelProtocol: ViewModel {
+    var state: ViewState<HourlyWeatherForecastViewModel> { get }
+}
