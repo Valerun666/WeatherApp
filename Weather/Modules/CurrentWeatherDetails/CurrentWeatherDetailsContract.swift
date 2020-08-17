@@ -9,5 +9,6 @@
 import Foundation
 
 protocol CurrentWeatherDetailsViewModelProtocol: ViewModel {
-    
+    var state: ViewState<CurrentWeatherForecastViewModel> { get }
+    var title: String { get }
 }

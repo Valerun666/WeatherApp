@@ -14,6 +14,7 @@ final class CurrentWeatherRouter: CurrentWeatherRouterOutput {
 
 extension CurrentWeatherRouter: CurrentWeatherRouterInput {
     func showCurrentWeatherDetails(_ data: CurrentWeatherForecastResponse) {
-        currentWeatherDetails = AnyView(Text("Current Weather Details"))
+        let viewModel = CurrentWeatherDetailsViewModel(data: data)
+        currentWeatherDetails = AnyView(CurrentWeatherDetails(viewModel: viewModel))
     }
 }

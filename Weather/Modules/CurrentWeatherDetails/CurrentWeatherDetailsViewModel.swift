@@ -8,10 +8,16 @@
 
 import Foundation
 
-final class CurrentWeatherDetailsViewModel {
+final class CurrentWeatherDetailsViewModel: CurrentWeatherDetailsViewModelProtocol {
+    @Published private(set) var state: ViewState<CurrentWeatherForecastViewModel> = .loading
+    private let data: CurrentWeatherForecastResponse
 
-}
+    public var title: String {
+        data.name
+    }
 
-extension CurrentWeatherDetailsViewModel: CurrentWeatherDetailsViewModelProtocol {
-    
+    init(data: CurrentWeatherForecastResponse) {
+        self.data = data
+        state = .data(CurrentWeatherForecastViewModel(item: data))
+    }
 }
