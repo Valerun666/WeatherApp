@@ -9,6 +9,11 @@
 import SwiftUI
 
 struct WeatherForecast<Router: WeatherForecastRouterOutput>: View {
+    enum TabTag: Int {
+        case currentWeather = 0
+        case hourlyWeather = 1
+    }
+
     @ObservedObject var viewModel: WeatherForecastViewModel
     @ObservedObject var router: Router
     @State private var selection = 0
@@ -34,14 +39,14 @@ struct WeatherForecast<Router: WeatherForecastRouterOutput>: View {
                         Image(systemName: "cloud.sun.bolt.fill")
                         Text("Current weather")
                 }
-                .tag(0)
+                .tag(TabTag.currentWeather.rawValue)
 
                 hourlyWeatherView
                     .tabItem {
                         Image(systemName: "clock.fill")
                         Text("Hourly weather")
                 }
-                .tag(1)
+                .tag(TabTag.hourlyWeather.rawValue)
             }
             .navigationBarTitle("Weather ⛅️", displayMode: .inline)
             .navigationBarItems(trailing:
